@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文献管理智能体 — AI Agent驱动的实证经济学研究</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700;900&display=swap');
+
+  :root {
+    --bg: #06060e;
+    --surface: #0c0c1a;
+    --surface2: #12122a;
+    --surface3: #1a1a3a;
+    --border: #1e1e40;
+    --border-hover: #2a2a55;
+    --accent: #7c5ce7;
+    --accent2: #b8a4f8;
+    --accent-glow: rgba(124, 92, 231, 0.3);
+    --green: #00e6a0;
+    --green-glow: rgba(0, 230, 160, 0.25);
+    --blue: #5ea0ff;
+    --blue-glow: rgba(94, 160, 255, 0.25);
+    --orange: #ff9f43;
+    --orange-glow: rgba(255, 159, 67, 0.25);
+    --red: #ff5e7a;
+    --red-glow: rgba(255, 94, 122, 0.25);
+    --purple: #b873f8;
+    --purple-glow: rgba(184, 115, 248, 0.25);
+    --text: #e8e8f8;
+    --text2: #9090b8;
+    --text3: #585888;
+    --radius: 20px;
+    --radius-sm: 12px;
+    --radius-xs: 8px;
+    --transition: 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-snap-type: y proximity; }
+
+  body {
+    font-family: 'Inter', 'Noto Sans SC', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Canvas background */
+  #bg-canvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
+  }
+
+  /* Slide */
+  .slide {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 100px 48px;
+    position: relative; z-index: 1;
+    scroll-snap-align: start;
+  }
+  .slide-container { max-width: 1120px; width: 100%; position: relative; }
+
+  /* Section number */
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 3px;
+    color: var(--text3); text-transform: uppercase; margin-bottom: 16px;
+  }
+
+  /* Typography */
+  h1 { font-size: clamp(2.4rem, 5vw, 4.2rem); font-weight: 900; letter-spacing: -1.5px; line-height: 1.15; }
+  h2 { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 800; letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 12px; }
+  h3 { font-size: 1.15rem; font-weight: 600; }
+  .subtitle { font-size: 1.05rem; color: var(--text2); font-weight: 400; }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, var(--accent2) 0%, var(--blue) 40%, var(--green) 80%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-text2 {
+    background: linear-gradient(135deg, var(--green) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  /* Glass card */
+  .glass-card {
+    background: rgba(18, 18, 42, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 36px;
+    transition: var(--transition);
+  }
+  .glass-card:hover { border-color: var(--border-hover); background: rgba(18, 18, 42, 0.8); }
+
+  /* Badge */
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px; border-radius: 100px;
+    border: 1px solid rgba(124, 92, 231, 0.3);
+    background: rgba(124, 92, 231, 0.08);
+    font-size: 0.82rem; font-weight: 600; color: var(--accent2);
+    letter-spacing: 0.5px;
+  }
+  .badge .live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+  @keyframes glowPulse { 0%,100% { box-shadow: 0 0 4px var(--green); } 50% { box-shadow: 0 0 12px var(--green), 0 0 24px var(--green); } }
+
+  /* Fade-up animation */
+  .fade-up { opacity: 0; transform: translateY(40px); animation: fadeUp 0.8s ease forwards; }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+  .delay-1 { animation-delay: 0.15s; }
+  .delay-2 { animation-delay: 0.3s; }
+  .delay-3 { animation-delay: 0.45s; }
+  .delay-4 { animation-delay: 0.6s; }
+
+  /* ============ HERO ============ */
+  .hero-layout { text-align: center; }
+  .hero-badge-row { margin-bottom: 24px; }
+  .hero-meta {
+    display: flex; align-items: center; justify-content: center; gap: 28px;
+    margin-top: 24px; flex-wrap: wrap;
+  }
+  .hero-meta-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.88rem; color: var(--text2);
+  }
+  .hero-meta-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .hero-meta-dot.s0 { background: var(--blue); box-shadow: 0 0 10px var(--blue-glow); }
+  .hero-meta-dot.s1 { background: var(--green); box-shadow: 0 0 10px var(--green-glow); }
+  .hero-meta-dot.s2 { background: var(--purple); box-shadow: 0 0 10px var(--purple-glow); }
+  .hero-meta-dot.s3 { background: var(--orange); box-shadow: 0 0 10px var(--orange-glow); }
+  .hero-meta-dot.s4 { background: var(--red); box-shadow: 0 0 10px var(--red-glow); }
+
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 20px; max-width: 600px; margin: 40px auto 0;
+  }
+  .hero-stat {
+    background: rgba(12, 12, 26, 0.7);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 24px 20px; text-align: center;
+    transition: var(--transition);
+  }
+  .hero-stat:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .hero-stat .hs-num { font-size: 2.6rem; font-weight: 900; line-height: 1; margin-bottom: 6px; }
+  .hero-stat .hs-label { font-size: 0.8rem; color: var(--text3); }
+
+  /* ============ ARCHITECTURE ============ */
+  .arch-wrapper {
+    display: flex; flex-direction: column; align-items: center; gap: 0;
+    margin: 44px 0 20px;
+  }
+  .arch-core-node {
+    background: linear-gradient(135deg, rgba(124,92,231,0.15) 0%, rgba(94,160,255,0.1) 100%);
+    border: 1.5px solid rgba(124, 92, 231, 0.4);
+    border-radius: var(--radius);
+    padding: 28px 48px; text-align: center;
+    box-shadow: 0 0 60px rgba(124, 92, 231, 0.12);
+    position: relative;
+  }
+  .arch-core-node h3 { color: var(--accent2); font-size: 1.25rem; margin-bottom: 4px; }
+  .arch-core-node p { color: var(--text3); font-size: 0.85rem; }
+  .arch-core-node::after {
+    content: ''; position: absolute; inset: -2px; border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--accent), transparent 40%, transparent 60%, var(--blue));
+    z-index: -1; opacity: 0.3; filter: blur(8px);
+  }
+
+  .arch-connector {
+    display: flex; align-items: center; gap: 4px; margin: 12px 0;
+  }
+  .arch-connector .conn-line {
+    width: 2px; height: 36px;
+    background: linear-gradient(to bottom, var(--accent), rgba(124,92,231,0.1));
+  }
+  .arch-connector .conn-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent2); box-shadow: 0 0 12px var(--accent-glow);
+  }
+
+  .arch-agents-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; width: 100%;
+  }
+  .arch-agent {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 22px 14px; text-align: center;
+    transition: var(--transition); cursor: default;
+    position: relative; overflow: hidden;
+  }
+  .arch-agent:hover { transform: translateY(-6px); border-color: var(--accent); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+  .arch-agent::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 3px 3px 0 0;
+  }
+  .arch-agent.ag-s::before { background: var(--blue); }
+  .arch-agent.ag-o::before { background: var(--green); }
+  .arch-agent.ag-a::before { background: var(--purple); }
+  .arch-agent.ag-t::before { background: var(--orange); }
+  .arch-agent.ag-e::before { background: var(--red); }
+
+  .arch-agent .ag-icon {
+    width: 40px; height: 40px; border-radius: 10px; margin: 0 auto 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; font-weight: 700;
+  }
+  .ag-s .ag-icon { background: var(--blue-glow); color: var(--blue); }
+  .ag-o .ag-icon { background: var(--green-glow); color: var(--green); }
+  .ag-a .ag-icon { background: var(--purple-glow); color: var(--purple); }
+  .ag-t .ag-icon { background: var(--orange-glow); color: var(--orange); }
+  .ag-e .ag-icon { background: var(--red-glow); color: var(--red); }
+  .arch-agent .ag-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
+  .arch-agent .ag-desc { font-size: 0.78rem; color: var(--text3); line-height: 1.4; }
+
+  /* ============ SKILL × AGENTS ============ */
+  .dual-cards {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 36px 0;
+  }
+  .dual-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 32px;
+    transition: var(--transition);
+  }
+  .dual-card:hover { border-color: var(--border-hover); }
+  .dual-card.skill-card { border-left: 3px solid var(--accent2); }
+  .dual-card.agent-card { border-left: 3px solid var(--green); }
+  .card-chip {
+    display: inline-block; padding: 4px 14px; border-radius: 100px;
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+  .skill-card .card-chip { background: rgba(124,92,231,0.12); color: var(--accent2); }
+  .agent-card .card-chip { background: rgba(0,230,160,0.12); color: var(--green); }
+  .dual-card ul { list-style: none; margin-top: 16px; }
+  .dual-card li { font-size: 0.85rem; color: var(--text2); line-height: 2.2; padding-left: 16px; position: relative; }
+  .dual-card li::before {
+    content: ''; position: absolute; left: 0; top: 13px;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--text3);
+  }
+
+  /* Route table */
+  .route-table {
+    width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 28px;
+    font-size: 0.88rem;
+  }
+  .route-table thead th {
+    text-align: left; padding: 12px 16px;
+    background: var(--surface2); color: var(--text3);
+    font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .route-table thead th:first-child { border-radius: var(--radius-xs) 0 0 0; }
+  .route-table thead th:last-child { border-radius: 0 var(--radius-xs) 0 0; }
+  .route-table td {
+    padding: 14px 16px; color: var(--text2);
+    border-bottom: 1px solid rgba(30, 30, 64, 0.5);
+  }
+  .route-table tbody tr { transition: var(--transition); }
+  .route-table tbody tr:hover td { background: rgba(124,92,231,0.04); }
+
+  .agent-tag {
+    display: inline-block; padding: 4px 12px; border-radius: 6px;
+    font-weight: 700; font-size: 0.78rem; font-family: 'JetBrains Mono', monospace;
+  }
+  .tag-blue { background: var(--blue-glow); color: var(--blue); }
+  .tag-green { background: var(--green-glow); color: var(--green); }
+  .tag-purple { background: var(--purple-glow); color: var(--purple); }
+  .tag-orange { background: var(--orange-glow); color: var(--orange); }
+  .tag-red { background: var(--red-glow); color: var(--red); }
+
+  /* ============ DETAIL CARDS ============ */
+  .detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 32px 0;
+  }
+  .detail-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 30px;
+    transition: var(--transition);
+    position: relative; overflow: hidden;
+  }
+  .detail-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+  .detail-card .dc-accent {
+    position: absolute; top: -36px; right: -36px;
+    width: 90px; height: 90px; border-radius: 50%; opacity: 0.06;
+  }
+  .detail-card.s0 .dc-accent { background: var(--blue); }
+  .detail-card.s1 .dc-accent { background: var(--green); }
+  .detail-card.s2 .dc-accent { background: var(--purple); }
+  .detail-card.s3 .dc-accent { background: var(--orange); }
+  .detail-card.s4 .dc-accent { background: var(--red); }
+  .detail-card .dc-step {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 2px;
+    margin-bottom: 8px; text-transform: uppercase;
+  }
+  .s0 .dc-step { color: var(--blue); }  .s1 .dc-step { color: var(--green); }
+  .s2 .dc-step { color: var(--purple); } .s3 .dc-step { color: var(--orange); }
+  .s4 .dc-step { color: var(--red); }
+  .detail-card h3 { font-size: 1.2rem; margin-bottom: 18px; }
+  .detail-row { display: flex; gap: 10px; margin-bottom: 7px; font-size: 0.85rem; }
+  .detail-row .dr-label { color: var(--text3); min-width: 72px; flex-shrink: 0; font-weight: 500; }
+  .detail-row .dr-val { color: var(--text2); }
+
+  /* ============ PIPELINE ============ */
+  .pipeline {
+    display: flex; align-items: center; gap: 8px; margin: 48px 0;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .pipe-node {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px 22px; text-align: center;
+    font-weight: 600; font-size: 0.88rem; transition: var(--transition);
+    min-width: 130px;
+  }
+  .pipe-node:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .pipe-node .pn-emoji { font-size: 1.5rem; margin-bottom: 6px; }
+  .pipe-node .pn-dir { font-size: 0.72rem; color: var(--text3); margin-top: 3px; font-weight: 400; }
+  .pipe-node.pn-highlight { border-color: rgba(124,92,231,0.4); box-shadow: 0 0 24px var(--accent-glow); }
+  .pipe-arrow { color: var(--accent2); font-size: 1.4rem; font-weight: 600; opacity: 0.6; }
+
+  /* ============ PRINCIPLES ============ */
+  .principle-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 36px 0;
+  }
+  .principle-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px 24px;
+    text-align: center; transition: var(--transition);
+  }
+  .principle-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+  .principle-card .pc-emoji { font-size: 2.2rem; margin-bottom: 14px; }
+  .principle-card h3 { font-size: 1rem; margin-bottom: 8px; }
+  .principle-card p { font-size: 0.82rem; color: var(--text3); line-height: 1.6; }
+
+  /* ============ WORKFLOW ============ */
+  .workflow-row {
+    display: flex; align-items: flex-start; gap: 0; margin: 44px 0; position: relative;
+  }
+  .wf-step { flex: 1; text-align: center; padding: 0 8px; position: relative; }
+  .wf-step-arrow {
+    position: absolute; right: -12px; top: 26px;
+    color: var(--accent2); font-size: 1.3rem; font-weight: 600; opacity: 0.5;
+  }
+  .wf-step:last-child .wf-step-arrow { display: none; }
+  .wf-circle {
+    width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 1.1rem;
+    background: rgba(124,92,231,0.08);
+    border: 1.5px solid rgba(124,92,231,0.25);
+    transition: var(--transition);
+    position: relative; z-index: 1;
+  }
+  .wf-step:hover .wf-circle { border-color: var(--accent2); box-shadow: 0 0 20px var(--accent-glow); }
+  .wf-step .wf-label { font-weight: 700; font-size: 0.88rem; margin-bottom: 4px; }
+  .wf-step .wf-desc { font-size: 0.78rem; color: var(--text3); line-height: 1.5; }
+
+  .workflow-highlight {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px 28px;
+    margin-top: 36px; text-align: center;
+  }
+
+  /* ============ CTA ============ */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 32px; border-radius: 100px;
+    font-weight: 600; font-size: 0.95rem;
+    text-decoration: none; transition: var(--transition); cursor: pointer;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #5a3fd4);
+    color: #fff; border: none;
+    box-shadow: 0 4px 28px var(--accent-glow);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 36px var(--accent-glow); }
+  .btn-outline {
+    border: 1px solid var(--border); color: var(--text2); background: transparent;
+  }
+  .btn-outline:hover { border-color: var(--accent2); color: var(--text); background: rgba(124,92,231,0.05); }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1000px) {
+    .slide { padding: 72px 28px; }
+    .arch-agents-grid { grid-template-columns: repeat(3, 1fr); }
+    .arch-agents-grid .arch-agent:nth-child(4) { grid-column: span 1; }
+    .arch-agents-grid .arch-agent:last-child { grid-column: 2 / 3; }
+    .dual-cards { grid-template-columns: 1fr; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .principle-grid { grid-template-columns: 1fr 1fr; }
+    .pipeline { gap: 6px; }
+    .pipe-node { min-width: 110px; padding: 16px 14px; font-size: 0.8rem; }
+  }
+
+  @media (max-width: 680px) {
+    .slide { padding: 56px 18px; }
+    .hero-stats { grid-template-columns: 1fr; max-width: 280px; }
+    .arch-agents-grid { grid-template-columns: 1fr 1fr; }
+    .arch-agents-grid .arch-agent:last-child { grid-column: 1 / -1; }
+    .principle-grid { grid-template-columns: 1fr; }
+    .workflow-row { flex-direction: column; gap: 24px; }
+    .wf-step-arrow { display: none; }
+    .pipeline { flex-direction: column; }
+    .pipe-arrow { transform: rotate(90deg); }
+  }
+
+  @media print {
+    .slide { min-height: auto; page-break-after: always; scroll-snap-align: none; padding: 40px; }
+    #bg-canvas { display: none; }
+    body { background: white; color: #1a1a2e; }
+    :root { --text: #1a1a2e; --text2: #555; --text3: #999; --surface2: #f6f6f8; --border: #e0e0e0; --bg: #fff; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- ==================== SLIDE 1: HERO ==================== -->
+<section class="slide">
+  <div class="slide-container hero-layout">
+    <div class="hero-badge-row fade-up">
+      <span class="badge">
+        <span class="live-dot"></span> OpenCode Agent Framework v2
+      </span>
+    </div>
+    <h1 class="fade-up delay-1">
+      <span class="gradient-text">文献管理智能体</span>
+    </h1>
+    <p class="subtitle fade-up delay-2" style="max-width:580px; margin:18px auto 0; font-size:1.1rem;">
+      AI Agent 驱动的实证经济学研究 · 五个核心环节，一套智能工作流
+    </p>
+    <div class="hero-meta fade-up delay-3">
+      <div class="hero-meta-item"><span class="hero-meta-dot s0"></span> 搜索</div>
+      <div class="hero-meta-item"><span class="hero-meta-dot s1"></span> 整理</div>
+      <div class="hero-meta-item"><span class="hero-meta-dot s2"></span> 分析</div>
+      <div class="hero-meta-item"><span class="hero-meta-dot s3"></span> 选题</div>
+      <div class="hero-meta-item"><span class="hero-meta-dot s4"></span> 评估</div>
+    </div>
+    <div class="hero-stats fade-up delay-4">
+      <div class="hero-stat">
+        <div class="hs-num gradient-text2">1</div>
+        <div class="hs-label">主代理 (Main Agent)</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-num" style="color:var(--accent2);">5</div>
+        <div class="hs-label">子代理 (Sub-agents)</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-num" style="color:var(--green);">5</div>
+        <div class="hs-label">数据目录节点</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 2: ARCHITECTURE ==================== -->
+<section class="slide">
+  <div class="slide-container">
+    <div class="section-num">System Architecture</div>
+    <h2>系统架构 <span class="gradient-text">总览</span></h2>
+    <p class="subtitle">基于 OpenCode 的 Skill + Sub-agent 双层架构设计</p>
+
+    <div class="arch-wrapper">
+      <div class="arch-core-node">
+        <h3>🧠 主代理 (Main Agent)</h3>
+        <p>实证经济学研究助手 · 意图理解 · 任务路由 · 数据目录管理</p>
+      </div>
+      <div class="arch-connector">
+        <span class="conn-line"></span><span class="conn-dot"></span><span class="conn-line"></span>
+      </div>
+      <div class="arch-agents-grid">
+        <div class="arch-agent ag-s">
+          <div class="ag-icon">1</div>
+          <div class="ag-name">lit-search</div>
+          <div class="ag-desc">文献搜索<br>CrossRef API</div>
+        </div>
+        <div class="arch-agent ag-o">
+          <div class="ag-icon">2</div>
+          <div class="ag-name">lit-organize</div>
+          <div class="ag-desc">文献整理<br>七要素知识卡片</div>
+        </div>
+        <div class="arch-agent ag-a">
+          <div class="ag-icon">3</div>
+          <div class="ag-name">lit-analyze</div>
+          <div class="ag-desc">文献分析<br>趋势与空白报告</div>
+        </div>
+        <div class="arch-agent ag-t">
+          <div class="ag-icon">4</div>
+          <div class="ag-name">lit-topic</div>
+          <div class="ag-desc">辅助选题<br>3 个可执行题目</div>
+        </div>
+        <div class="arch-agent ag-e">
+          <div class="ag-icon">5</div>
+          <div class="ag-name">lit-evaluate</div>
+          <div class="ag-desc">可行性评估<br>四维度评分</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 3: SKILL × AGENTS ==================== -->
+<section class="slide">
+  <div class="slide-container">
+    <div class="section-num">Design Layer</div>
+    <h2>Skill 与 Sub-agent <span class="gradient-text">双层设计</span></h2>
+    <p class="subtitle">关注点分离：Skill 定义触发条件和路由规则，Sub-agent 执行具体任务</p>
+
+    <div class="dual-cards">
+      <div class="dual-card skill-card">
+        <span class="card-chip">Skill 层</span>
+        <h3>literature-manager</h3>
+        <p style="color:var(--text3); font-size:0.88rem; margin-bottom:16px;">定义触发条件、路由规则和对话模式</p>
+        <ul>
+          <li>触发条件匹配（关键词/语义）</li>
+          <li>用户意图 → 子代理路由</li>
+          <li>前置数据条件验证</li>
+          <li>对话模式模板</li>
+          <li>主代理原则约束</li>
+        </ul>
+      </div>
+      <div class="dual-card agent-card">
+        <span class="card-chip">Sub-agent 层</span>
+        <h3>5 个专用子代理</h3>
+        <p style="color:var(--text3); font-size:0.88rem; margin-bottom:16px;">每个子代理封装完整的输入、工作步骤和输出规范</p>
+        <ul>
+          <li>独立的 system prompt</li>
+          <li>自主的用户交互流程</li>
+          <li>结构化的输出格式</li>
+          <li>约束条件自检</li>
+          <li>可独立调用或串联工作流</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="margin-top:40px;">路由规则</h3>
+    <table class="route-table">
+      <thead>
+        <tr>
+          <th>用户意图</th>
+          <th>子代理</th>
+          <th>数据前置条件</th>
+          <th>主代理前置交互</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>搜索文献</strong></td>
+          <td><span class="agent-tag tag-blue">lit-search</span></td>
+          <td>无</td>
+          <td>逐项确认：关键词、年份、期刊层级</td>
+        </tr>
+        <tr>
+          <td><strong>整理文献</strong></td>
+          <td><span class="agent-tag tag-green">lit-organize</span></td>
+          <td>待处理目录有 PDF</td>
+          <td>确认目标 PDF</td>
+        </tr>
+        <tr>
+          <td><strong>分析文献</strong></td>
+          <td><span class="agent-tag tag-purple">lit-analyze</span></td>
+          <td>有知识卡片 / 搜索结果</td>
+          <td>确认数据源</td>
+        </tr>
+        <tr>
+          <td><strong>辅助选题</strong></td>
+          <td><span class="agent-tag tag-orange">lit-topic</span></td>
+          <td>有分析报告</td>
+          <td>确认数据源</td>
+        </tr>
+        <tr>
+          <td><strong>评估题目</strong></td>
+          <td><span class="agent-tag tag-red">lit-evaluate</span></td>
+          <td>用户选定题目</td>
+          <td>确认题目措辞</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 4: SUB-AGENTS 1 & 2 ==================== -->
+<section class="slide">
+  <div class="slide-container">
+    <div class="section-num">Sub-agents — Part 1 of 3</div>
+    <h2>子代理详解 <span class="gradient-text">(1/3)</span></h2>
+
+    <div class="detail-grid">
+      <div class="detail-card s0">
+        <div class="dc-accent"></div>
+        <div class="dc-step">Step 1</div>
+        <h3>🔍 lit-search · 文献搜索</h3>
+        <div class="detail-row"><span class="dr-label">输入</span><span class="dr-val">关键词 + 年份范围 + 期刊层级</span></div>
+        <div class="detail-row"><span class="dr-label">工具</span><span class="dr-val">CrossRef REST API 原生关键词搜索</span></div>
+        <div class="detail-row"><span class="dr-label">排序</span><span class="dr-val">score 关联度评分，无需 LLM 二次排序</span></div>
+        <div class="detail-row"><span class="dr-label">约束</span><span class="dr-val">关键词 ≤ 5；必含原始关键词；期刊可选 top5 / field_top / all</span></div>
+        <div class="detail-row"><span class="dr-label">输出</span><span class="dr-val">文献库/0_搜索结果/{关键词}-{范围}-{日期}.csv</span></div>
+      </div>
+      <div class="detail-card s1">
+        <div class="dc-accent"></div>
+        <div class="dc-step">Step 2</div>
+        <h3>📝 lit-organize · 文献整理</h3>
+        <div class="detail-row"><span class="dr-label">输入</span><span class="dr-val">PDF（待处理目录）</span></div>
+        <div class="detail-row"><span class="dr-label">核心</span><span class="dr-val">从全文提取「七要素」</span></div>
+        <div class="detail-row"><span class="dr-label">七要素</span><span class="dr-val">研究问题 / 理论框架 / 数据来源 / 识别策略 / 核心发现 / 机制检验 / 局限性</span></div>
+        <div class="detail-row"><span class="dr-label">格式</span><span class="dr-val">YAML frontmatter + Obsidian 双向链接兼容</span></div>
+        <div class="detail-row"><span class="dr-label">输出</span><span class="dr-val">文献库/2_知识卡片/{姓氏}{年份}.md</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 5: SUB-AGENTS 3 & 4 ==================== -->
+<section class="slide">
+  <div class="slide-container">
+    <div class="section-num">Sub-agents — Part 2 of 3</div>
+    <h2>子代理详解 <span class="gradient-text">(2/3)</span></h2>
+
+    <div class="detail-grid">
+      <div class="detail-card s2">
+        <div class="dc-accent"></div>
+        <div class="dc-step">Step 3</div>
+        <h3>📊 lit-analyze · 文献分析</h3>
+        <div class="detail-row"><span class="dr-label">数据源</span><span class="dr-val">搜索结果 CSV 或 知识卡片 MD</span></div>
+        <div class="detail-row"><span class="dr-label">统计</span><span class="dr-val">发表总量 / 主题分布 / 期刊分布 / 时间趋势</span></div>
+        <div class="detail-row"><span class="dr-label">演进</span><span class="dr-val">年度热点转移 / 上升 vs 下降主题 / 新交叉领域</span></div>
+        <div class="detail-row"><span class="dr-label">深度</span><span class="dr-val">明星学者 / 矛盾观点 / 方法论分歧</span></div>
+        <div class="detail-row"><span class="dr-label">空白</span><span class="dr-val">话题空白 / 理论空白 / 方法空白 / 情境空白</span></div>
+        <div class="detail-row"><span class="dr-label">输出</span><span class="dr-val">文献库/3_分析报告/{关键词}-{日期}-分析报告.html</span></div>
+      </div>
+      <div class="detail-card s3">
+        <div class="dc-accent"></div>
+        <div class="dc-step">Step 4</div>
+        <h3>💡 lit-topic · 辅助选题</h3>
+        <div class="detail-row"><span class="dr-label">输入</span><span class="dr-val">lit-analyze 生成的分析报告</span></div>
+        <div class="detail-row"><span class="dr-label">生成</span><span class="dr-val">矛盾调和 + 空白填补 + 交叉嫁接</span></div>
+        <div class="detail-row"><span class="dr-label">筛选</span><span class="dr-val">差异化 / 数据可获取 / 方法可行 / 有政策含义</span></div>
+        <div class="detail-row"><span class="dr-label">选题结构</span><span class="dr-val">中英文题目 + 核心问题 + 创新点 + 数据 + 识别策略 + 期刊层次</span></div>
+        <div class="detail-row"><span class="dr-label">输出</span><span class="dr-val">文献库/4_选题报告/{关键词}-{日期}-选题报告.md</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 6: SUB-AGENT 5 ==================== -->
+<section class="slide">
+  <div class="slide-container">
+    <div class="section-num">Sub-agents — Part 3 of 3</div>
+    <h2>子代理详解 <span class="gradient-text">(3/3)</span></h2>
+
+    <div class="detail-grid" style="grid-template-columns: 1fr; max-width: 600px; margin: 32px auto;">
+      <div class="detail-card s4">
+        <div class="dc-accent"></div>
+        <div class="dc-step">Step 5</div>
+        <h3>✅ lit-evaluate · 可行性评估</h3>
+        <div class="detail-row"><span class="dr-label">输入</span><span class="dr-val">用户选定的研究题目</span></div>
+        <div class="detail-row" style="margin-top:16px;">
+          <span class="dr-label">维度 1</span>
+          <span class="dr-val"><strong>新颖性</strong> — 与已有文献差异 · 新问题/新机制/新视角</span>
+        </div>
+        <div class="detail-row">
+          <span class="dr-label">维度 2</span>
+          <span class="dr-val"><strong>数据可行性</strong> — 数据存在性 · 获取难度 · 样本量 · 数据质量</span>
+        </div>
+        <div class="detail-row">
+          <span class="dr-label">维度 3</span>
+          <span class="dr-val"><strong>方法可行性</strong> — 识别策略 · 内生性威胁 · 稳健性空间 · 能力匹配</span>
+        </div>
+        <div class="detail-row">
+          <span class="dr-label">维度 4</span>
+          <span class="dr-val"><strong>发表可能性</strong> — 话题热度 · 边际贡献 · 政策相关性 · 时机</span>
+        </div>
+        <div class="detail-row" style="margin-top:16px;">
+          <span class="dr-label">输出</span>
+          <span class="dr-val">文献库/5_可行性报告/{题目}-{日期}-可行性评估.md</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 7: PIPELINE ==================== -->
+<section class="slide">
+  <div class="slide-container">
+    <div class="section-num">Data Pipeline</div>
+    <h2>数据流与 <span class="gradient-text">目录结构</span></h2>
+    <p class="subtitle">五个数据节点串联文献管理的全生命周期</p>
+
+    <div class="pipeline">
+      <div class="pipe-node">
+        <div class="pn-emoji">🔍</div>
+        <div>0_搜索结果</div>
+        <div class="pn-dir">CSV</div>
+      </div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-node">
+        <div class="pn-emoji">📄</div>
+        <div>1_论文池</div>
+        <div class="pn-dir">PDF（待处理/已归档）</div>
+      </div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-node">
+        <div class="pn-emoji">📝</div>
+        <div>2_知识卡片</div>
+        <div class="pn-dir">MD + YAML frontmatter</div>
+      </div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-node">
+        <div class="pn-emoji">📊</div>
+        <div>3_分析报告</div>
+        <div class="pn-dir">HTML / Markdown</div>
+      </div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-node pn-highlight">
+        <div class="pn-emoji">✅</div>
+        <div>5_可行性报告</div>
+        <div class="pn-dir">Markdown</div>
+      </div>
+    </div>
+
+    <p style="text-align:center; margin-top:20px; font-size:0.82rem; color:var(--text3);">
+      ※ 序号 4 为选题报告目录（与 3 分析报告、5 可行性报告构成选题工作流）
+    </p>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 8: PRINCIPLES ==================== -->
+<section class="slide">
+  <div class="slide-container">
+    <div class="section-num">Design Principles</div>
+    <h2>设计 <span class="gradient-text">原则</span></h2>
+    <p class="subtitle">六大原则贯穿 Skill 与 Sub-agent 的双层设计</p>
+
+    <div class="principle-grid">
+      <div class="principle-card">
+        <div class="pc-emoji">🔒</div>
+        <h3>强制确认规则</h3>
+        <p>搜索前逐项确认关键词、年份、期刊层级；评估前确认目标期刊。主代理不替子代理跳过用户交互。</p>
+      </div>
+      <div class="principle-card">
+        <div class="pc-emoji">🧩</div>
+        <h3>关注点分离</h3>
+        <p>Skill 层负责路由和触发，Sub-agent 层负责执行。每个子代理独立封装完整规范。</p>
+      </div>
+      <div class="principle-card">
+        <div class="pc-emoji">📐</div>
+        <h3>结构化输出</h3>
+        <p>CSV（搜索结果）→ YAML+MD（知识卡片）→ HTML（分析报告）→ 四维度评分表（评估）。</p>
+      </div>
+      <div class="principle-card">
+        <div class="pc-emoji">🔄</div>
+        <h3>可串联工作流</h3>
+        <p>搜索 → 整理 → 分析 → 选题 → 评估，每步输出作为下一步输入，也可独立调用。</p>
+      </div>
+      <div class="principle-card">
+        <div class="pc-emoji">🛡️</div>
+        <h3>约束自检</h3>
+        <p>关键词 ≤ 5 且必含原始词；标签用连字符；不联想不创造；引用文献必须存在于库中。</p>
+      </div>
+      <div class="principle-card">
+        <div class="pc-emoji">🎯</div>
+        <h3>领域聚焦</h3>
+        <p>劳动经济学、发展经济学、环境经济学、供应链管理、数字经济等应用微观计量领域。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 9: WORKFLOW ==================== -->
+<section class="slide">
+  <div class="slide-container">
+    <div class="section-num">Workflow Example</div>
+    <h2>典型工作流 <span class="gradient-text">示例</span></h2>
+    <p class="subtitle">从搜索到评估，一个完整的文献管理流程</p>
+
+    <div class="workflow-row">
+      <div class="wf-step">
+        <div class="wf-circle">🔍</div>
+        <span class="wf-step-arrow">→</span>
+        <div class="wf-label">搜索文献</div>
+        <div class="wf-desc">输入"供应链重构"<br>lit-search 搜索 CrossRef<br>生成 CSV 结果</div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-circle">📝</div>
+        <span class="wf-step-arrow">→</span>
+        <div class="wf-label">整理文献</div>
+        <div class="wf-desc">导入 PDF 到待处理<br>lit-organize 提取七要素<br>生成知识卡片</div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-circle">📊</div>
+        <span class="wf-step-arrow">→</span>
+        <div class="wf-label">分析趋势</div>
+        <div class="wf-desc">lit-analyze 读取卡片与 CSV<br>主题/方法/空白分析<br>输出 HTML 报告</div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-circle">💡</div>
+        <span class="wf-step-arrow">→</span>
+        <div class="wf-label">辅助选题</div>
+        <div class="wf-desc">lit-topic 基于分析报告<br>生成 3 个可执行题目<br>选题报告</div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-circle">✅</div>
+        <div class="wf-label">评估可行性</div>
+        <div class="wf-desc">lit-evaluate 四维评分<br>新颖性/数据/方法/发表<br>可行性报告</div>
+      </div>
+    </div>
+
+    <div class="workflow-highlight">
+      <p style="color:var(--text3); font-size:0.82rem;">
+        最近一次完整工作流：<strong style="color:var(--text2);">"供应链重构"</strong> 主题
+      </p>
+      <p style="color:var(--text2); font-size:0.88rem; margin-top:4px;">
+        CrossRef 搜索 → 60 篇文献 → 3 张知识卡片 → 分析报告 → 3 个选题 → "环境规制与供应链重构" 评估 29/40
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLIDE 10: CTA ==================== -->
+<section class="slide" style="text-align:center;">
+  <div class="slide-container" style="text-align:center;">
+    <div class="section-num" style="text-align:center;">Get Started</div>
+    <h2>
+      让 AI 辅助你的<br>
+      <span class="gradient-text">经济学研究</span>
+    </h2>
+    <p class="subtitle" style="max-width:520px; margin:16px auto 0;">
+      从文献搜索到选题评估，五个智能代理协同工作，覆盖实证经济学研究的全流程文献管理。
+    </p>
+    <div style="display:flex; gap:16px; margin-top:36px; justify-content:center; flex-wrap:wrap;">
+      <a href="https://github.com/anomalyco/opencode" class="btn btn-primary" target="_blank">基于 OpenCode 构建</a>
+      <a href="#" class="btn btn-outline">查看 AGENTS.md</a>
+    </div>
+    <p style="margin-top:48px; font-size:0.78rem; color:var(--text3);">
+      文献管理智能体 v2.0 · 劳动经济学 · 发展经济学 · 环境经济学 · 供应链管理 · 数字经济
+    </p>
+  </div>
+</section>
+
+<script>
+(function() {
+  var canvas = document.getElementById('bg-canvas');
+  var ctx = canvas.getContext('2d');
+  var particles = [];
+  var particleCount = 80;
+  var connectionDist = 120;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = document.body.scrollHeight;
+  }
+
+  function createParticles() {
+    particles = [];
+    var h = document.body.scrollHeight;
+    for (var i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        r: Math.random() * 1.8 + 0.5,
+        o: Math.random() * 0.4 + 0.1
+      });
+    }
+  }
+
+  function animate() {
+    var w = canvas.width;
+    var h = document.body.scrollHeight;
+
+    if (canvas.height !== h) { resize(); createParticles(); }
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Move & draw particles
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > w) p.vx *= -1;
+      if (p.y < 0 || p.y > h) p.vy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(124, 92, 231, ' + p.o + ')';
+      ctx.fill();
+    }
+
+    // Draw connections
+    for (var i = 0; i < particles.length; i++) {
+      for (var j = i + 1; j < particles.length; j++) {
+        var dx = particles[i].x - particles[j].x;
+        var dy = particles[i].y - particles[j].y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < connectionDist) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = 'rgba(124, 92, 231, ' + (0.08 * (1 - dist / connectionDist)) + ')';
+          ctx.lineWidth = 0.6;
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  resize();
+  createParticles();
+  animate();
+
+  window.addEventListener('resize', function() { resize(); createParticles(); });
+
+  // Update canvas height on scroll (catch dynamic layout)
+  var scrollTimer;
+  window.addEventListener('scroll', function() {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(function() { resize(); createParticles(); }, 200);
+  });
+})();
+</script>
+
+</body>
+</html>

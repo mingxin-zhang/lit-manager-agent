@@ -1,0 +1,25 @@
+# Top 经济学及 Field Top 期刊 ISSN 列表
+# 用于 CrossRef API 查询
+
+top5:
+  AER: "0002-8282"          # American Economic Review
+  QJE: "0033-5533"          # Quarterly Journal of Economics
+  JPE: "0022-3808"          # Journal of Political Economy
+  Econometrica: "0012-9682" # Econometrica
+  Restud: "0034-6527"       # Review of Economic Studies
+
+field_top:
+  AER: "0002-8282"          # American Economic Review
+  QJE: "0033-5533"          # Quarterly Journal of Economics
+  JPE: "0022-3808"          # Journal of Political Economy
+  Econometrica: "0012-9682" # Econometrica
+  Restud: "0034-6527"       # Review of Economic Studies
+  REStat: "0034-6535"       # Review of Economics and Statistics
+  AEJ_Applied: "1945-7782"  # AEJ: Applied Economics
+  AEJ_EconPolicy: "1945-7731" # AEJ: Economic Policy
+  AEJ_Macro: "1945-7707"    # AEJ: Macroeconomics
+  AEJ_Micro: "1945-7669"    # AEJ: Microeconomics
+  JDE: "0304-3878"          # Journal of Development Economics
+
+field_journals:
+  EM: "0264-9993"          # Economic Modelling

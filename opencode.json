@@ -1,0 +1,28 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "skills": {
+    "paths": [".opencode/skills"]
+  },
+  "agent": {
+    "lit-search": {
+      "mode": "subagent",
+      "description": "学术文献搜索：拆解关键词为检索式，多源搜索结果排序"
+    },
+    "lit-organize": {
+      "mode": "subagent",
+      "description": "文献整理：读取 PDF 提取七要素，生成结构化知识卡片写入文献库"
+    },
+    "lit-analyze": {
+      "mode": "subagent",
+      "description": "文献趋势分析：遍历知识卡片，统计主题/方法趋势，识别研究空白"
+    },
+    "lit-topic": {
+      "mode": "subagent",
+      "description": "辅助选题：基于文献空白生成 3 个可执行研究题目"
+    },
+    "lit-evaluate": {
+      "mode": "subagent",
+      "description": "可行性评估：从新颖性/数据/方法/发表四维度评分选题"
+    }
+  }
+}
