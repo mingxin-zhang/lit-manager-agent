@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>供应链重构领域研究进展分析报告</title>
+<style>
+  :root {
+    --primary: #1a365d;
+    --secondary: #2b6cb0;
+    --accent: #3182ce;
+    --bg: #f7fafc;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --text: #2d3748;
+    --text-light: #718096;
+    --success: #38a169;
+    --warning: #d69e2e;
+    --danger: #e53e3e;
+    --info: #319795;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    font-size: 15px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 24px; }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, var(--primary) 0%, #2a4365 40%, #2c5282 100%);
+    color: #fff;
+    padding: 48px 0 40px;
+    margin-bottom: 32px;
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 4px 20px rgba(26, 54, 93, 0.3);
+    text-align: center;
+  }
+  .hero h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px; }
+  .hero .subtitle { font-size: 14px; opacity: 0.85; }
+  .hero .meta {
+    margin-top: 20px; display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;
+  }
+  .hero .meta-item { text-align: center; }
+  .hero .meta-item .num { font-size: 32px; font-weight: 800; }
+  .hero .meta-item .label { font-size: 12px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Section */
+  .section {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .section h2 {
+    font-size: 20px; font-weight: 700; color: var(--primary);
+    padding-bottom: 12px; margin-bottom: 20px;
+    border-bottom: 2px solid var(--accent);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section h2 .icon { font-size: 22px; }
+  .section h3 {
+    font-size: 16px; font-weight: 600; color: var(--secondary);
+    margin: 24px 0 12px;
+  }
+  .section h3:first-child { margin-top: 0; }
+
+  /* Tables */
+  table {
+    width: 100%; border-collapse: collapse; margin: 16px 0;
+    font-size: 13px;
+  }
+  th {
+    background: #edf2f7; color: var(--primary); font-weight: 600;
+    padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:hover td { background: #f7fafc; }
+  .journal-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+  }
+  .tag-aer { background: #bee3f8; color: #2a4365; }
+  .tag-ecta { background: #c6f6d5; color: #22543d; }
+  .tag-jpe { background: #feebc8; color: #7b341e; }
+  .tag-qje { background: #e9d8fd; color: #44337a; }
+  .tag-restud { background: #fed7e2; color: #702459; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before {
+    content: ""; position: absolute; left: 8px; top: 0; bottom: 0;
+    width: 3px; background: var(--border);
+  }
+  .tl-item {
+    position: relative; margin-bottom: 24px; padding-left: 24px;
+  }
+  .tl-item::before {
+    content: ""; position: absolute; left: -20px; top: 6px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent); border: 2px solid #fff;
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+  .tl-year {
+    font-size: 13px; font-weight: 700; color: var(--accent);
+    margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .tl-content { font-size: 14px; }
+  .tl-content strong { color: var(--primary); }
+
+  /* Cards */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin: 16px 0; }
+  .card {
+    background: #f7fafc; border: 1px solid var(--border);
+    border-radius: 8px; padding: 18px 20px;
+  }
+  .card h4 { font-size: 14px; color: var(--primary); margin-bottom: 8px; }
+  .card p { font-size: 13px; color: var(--text-light); line-height: 1.7; }
+
+  /* Highlight box */
+  .highlight {
+    background: linear-gradient(135deg, #ebf8ff 0%, #e6fffa 100%);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px; margin: 16px 0;
+    font-size: 14px;
+  }
+  .highlight strong { color: var(--primary); }
+
+  /* Bar chart (CSS) */
+  .bar-chart { margin: 16px 0; }
+  .bar-row { display: flex; align-items: center; margin-bottom: 8px; }
+  .bar-label { width: 200px; font-size: 13px; font-weight: 500; text-align: right; padding-right: 12px; flex-shrink: 0; }
+  .bar-track { flex: 1; background: #edf2f7; border-radius: 4px; height: 22px; overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; }
+  .bar-fill span { font-size: 11px; color: #fff; padding-left: 8px; font-weight: 600; white-space: nowrap; }
+  .bar-pct { width: 80px; font-size: 12px; color: var(--text-light); padding-left: 10px; flex-shrink: 0; }
+
+  /* Arrow flow */
+  .flow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 16px 0; font-size: 13px; }
+  .flow-node {
+    background: #edf2f7; border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px; font-weight: 600; text-align: center;
+  }
+  .flow-arrow { color: var(--accent); font-size: 18px; font-weight: 700; }
+
+  /* Gap tags */
+  .gap-tag {
+    display: inline-block; padding: 3px 10px; border-radius: 12px;
+    font-size: 12px; font-weight: 600; margin: 2px 4px;
+  }
+  .gap-theory { background: #ebf8ff; color: #2b6cb0; }
+  .gap-empirical { background: #f0fff4; color: #276749; }
+  .gap-method { background: #fffaf0; color: #975a16; }
+  .gap-policy { background: #fff5f5; color: #c53030; }
+
+  /* Footer */
+  .footer {
+    text-align: center; color: var(--text-light); font-size: 12px;
+    padding: 24px 0; margin-top: 16px; border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 12px; }
+    .section { padding: 20px 16px; }
+    .bar-label { width: 120px; font-size: 12px; }
+    .hero .meta { gap: 16px; }
+    .hero .meta-item .num { font-size: 24px; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ====== HERO ====== -->
+<div class="hero">
+  <div class="container">
+    <h1>供应链重构领域研究进展与演进方向</h1>
+    <p class="subtitle">基于 Economics Top5 期刊 2022–2025 年 8 篇核心文献的系统分析</p>
+    <div class="meta">
+      <div class="meta-item"><div class="num">8</div><div class="label">核心文献</div></div>
+      <div class="meta-item"><div class="num">5</div><div class="label">Top5 期刊</div></div>
+      <div class="meta-item"><div class="num">2022–2025</div><div class="label">时间跨度</div></div>
+      <div class="meta-item"><div class="num">609</div><div class="label">累计引用</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ====== 一、文献概览 ====== -->
+<div class="section">
+  <h2><span class="icon">&#128218;</span> 一、文献概览</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>年份</th>
+        <th>期刊</th>
+        <th>作者</th>
+        <th>标题</th>
+        <th>引用</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>2022</td>
+        <td><span class="journal-tag tag-aer">AER</span></td>
+        <td>Elliott, Golub & Leduc</td>
+        <td>Supply Network Formation and Fragility</td>
+        <td><strong>139</strong></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>2022</td>
+        <td><span class="journal-tag tag-qje">QJE</span></td>
+        <td>Alfaro-Ureña, Manelici & Vasquez</td>
+        <td>The Effects of Joining Multinational Supply Chains</td>
+        <td><strong>168</strong></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>2023</td>
+        <td><span class="journal-tag tag-jpe">JPE</span></td>
+        <td>Grossman, Helpman & Lhuillier</td>
+        <td>Supply Chain Resilience: Diversification or Reshoring?</td>
+        <td><strong>100</strong></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>2024</td>
+        <td><span class="journal-tag tag-restud">REStud</span></td>
+        <td>Acemoglu & Tahbaz-Salehi</td>
+        <td>The Macroeconomics of Supply Chain Disruptions</td>
+        <td><strong>41</strong></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>2024</td>
+        <td><span class="journal-tag tag-ecta">ECTA</span></td>
+        <td>Kopytov, Mishra, Nimark & Taschereau-Dumouchel</td>
+        <td>Endogenous Production Networks Under Supply Chain Uncertainty</td>
+        <td><strong>37</strong></td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>2024</td>
+        <td><span class="journal-tag tag-aer">AER</span></td>
+        <td>Grossman, Helpman & Redding</td>
+        <td>When Tariffs Disrupt Global Supply Chains</td>
+        <td><strong>108</strong></td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>2024</td>
+        <td><span class="journal-tag tag-qje">QJE</span></td>
+        <td>Grossman, Helpman & Sabal</td>
+        <td>Optimal Resilience in Multitier Supply Chains</td>
+        <td><strong>13</strong></td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>2025</td>
+        <td><span class="journal-tag tag-restud">REStud</span></td>
+        <td>Korovkin, Makarin & Miyauchi</td>
+        <td>Supply Chain Disruption and Reorganization: Ukraine's War</td>
+        <td><strong>3</strong></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:13px; color:var(--text-light); margin-top:8px;">
+    注：引文数据来自 Crossref，2025 年发表的论文因时间较短，引用量尚在积累中。
+  </p>
+</div>
+
+<!-- ====== 二、研究进展脉络 ====== -->
+<div class="section">
+  <h2><span class="icon">&#128161;</span> 二、领域研究进展脉络</h2>
+
+  <p style="margin-bottom:16px;">供应链重构研究在过去四年中经历了从<strong>理论奠基 → 机制深化 → 政策量化 → 实证验证</strong>的清晰演进路径。以下是按时间线展开的三个关键阶段：</p>
+
+  <div class="timeline">
+
+    <div class="tl-item">
+      <div class="tl-year">第一阶段：理论奠基（2022–2023）</div>
+      <div class="tl-content">
+        <p><strong>Elliott, Golub & Leduc (2022, AER)</strong> 开创性地将网络形成理论引入供应链研究，证明<em>中间生产率水平的供应链网络在均衡中是脆弱的</em>——微观层面的特殊冲击通过网络结构被不成比例地放大。这是该领域的奠基性理论贡献（139次引用，为该领域最高）。</p>
+        <p style="margin-top:6px;"><strong>Alfaro-Ureña, Manelici & Vasquez (2022, QJE)</strong> 利用哥斯达黎加企业间交易数据，首次在微观层面实证展示了加入跨国供应链的正面效应：国内供应商在成为MNC供应商4年后，雇佣规模增加26%，全要素生产率提升4–9%。该文揭示了供应链整合的"光明面"，为该领域提供了关键的经验基准。</p>
+        <p style="margin-top:6px;"><strong>Grossman, Helpman & Lhuillier (2023, JPE)</strong> 将政策维度引入讨论，首次系统比较了<em>国际多元化 vs. 回流/近岸</em>两种供应链韧性策略的福利含义，为后续的政策设计研究奠定了基础。</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-year">第二阶段：机制深化（2024）</div>
+      <div class="tl-content">
+        <p>2024年是该领域的<strong>爆发之年</strong>——4篇Top5论文集中发表，理论深度与政策相关性显著跃升：</p>
+        <p style="margin-top:6px;"><strong>Acemoglu & Tahbaz-Salehi (2024, REStud)</strong> 将内生网络形成、关系专用性投资与纳什议价整合进统一的一般均衡框架，首次严格证明<em>均衡供应链不仅是脆弱的，而且是内在无效率的</em>——即使是连续的小冲击也可能导致产出的非连续跳跃。该文建立了供应链宏观经济学的新基准模型。</p>
+        <p style="margin-top:6px;"><strong>Kopytov, Mishra, Nimark & Taschereau-Dumouchel (2024, Econometrica)</strong> 将<em>不确定性</em>引入网络形成决策，揭示了一个关键权衡：企业为了规避供应风险而转向更稳定的供应商，这虽然降低了宏观波动，但以总产出下降为代价。该文还预测了稳定且高生产率企业在均衡网络中具有更高的Domar权重。</p>
+        <p style="margin-top:6px;"><strong>Grossman, Helpman & Redding (2024, AER)</strong> 将贸易政策（关税）与全球供应链的微观结构结合起来，校准模型以匹配美国对中国加征关税的实证反应，量化了供应链重组带来的搜索成本与福利损失（GDP的0.12%）。</p>
+        <p style="margin-top:6px;"><strong>Grossman, Helpman & Sabal (2024, QJE)</strong> 将分析从单层网络拓展到<em>多层垂直供应链</em>，推导了最优韧性投资的一阶和二阶政策含义——尤其是上游企业应获得比下游更大的补贴。</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-year">第三阶段：实证验证与冲击量化（2025）</div>
+      <div class="tl-content">
+        <p><strong>Korovkin, Makarin & Miyauchi (2025, REStud)</strong> 利用乌克兰铁路货运的企业间交易数据和2014年俄乌冲突作为外生冲击，首次在真实地缘政治冲突情境下<em>同时检验了供应链中断与重组的理论预测</em>。核心发现：企业确实通过重组生产网络来缓解冲击——未考虑重组时冲突导致的产出损失为8.4%，考虑重组后降至5.5%。这为前面各阶段的理论模型提供了迄今为止最干净的实证验证。</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Evolution flow diagram -->
+  <div style="margin-top: 28px;">
+    <h3>核心演进脉络一览</h3>
+    <div class="flow">
+      <div class="flow-node">网络脆弱性<br><small>Elliott et al. 2022</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">内生网络形成<br><small>Acemoglu 2024</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">不确定性下的<br>网络选择<br><small>Kopytov et al. 2024</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">政策干预<br>& 多层网络<br><small>Grossman et al.<br>2023, 2024</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">真实冲击<br>实证验证<br><small>Korovkin et al. 2025</small></div>
+    </div>
+    <div class="flow" style="margin-top:4px;">
+      <div class="flow-node" style="background:#e6fffa; font-size:12px;">纯理论模型</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node" style="background:#e6fffa; font-size:12px;">校准&数值模拟</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node" style="background:#e6fffa; font-size:12px;">结构估计</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node" style="background:#e6fffa; font-size:12px;">准实验/自然实验</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 三、理论与方法演进 ====== -->
+<div class="section">
+  <h2><span class="icon">&#128300;</span> 三、关键理论和方法论的演进</h2>
+
+  <h3>3.1 理论框架演进</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>维度</th>
+        <th>早期（2022）</th>
+        <th>近期（2024–2025）</th>
+        <th>演进方向</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>网络结构</strong></td>
+        <td>外生给定或简单形成规则</td>
+        <td>完全内生形成（匹配、解约、再匹配）</td>
+        <td>从描述性 → 微观基础化</td>
+      </tr>
+      <tr>
+        <td><strong>企业决策</strong></td>
+        <td>单一维度（投资强化关系）</td>
+        <td>多维度（搜索、议价、投资、解约）</td>
+        <td>从简化 → 富化决策空间</td>
+      </tr>
+      <tr>
+        <td><strong>不确定性</strong></td>
+        <td>外生冲击（idiosyncratic shocks）</td>
+        <td>内生不确定性 + 风险规避行为</td>
+        <td>从外生 → 内生响应</td>
+      </tr>
+      <tr>
+        <td><strong>网络层级</strong></td>
+        <td>单层/水平网络</td>
+        <td>多层垂直供应链（upstream→downstream）</td>
+        <td>从水平 → 垂直深化</td>
+      </tr>
+      <tr>
+        <td><strong>空间维度</strong></td>
+        <td>封闭经济或简化国际贸易</td>
+        <td>全球供应链 + 地缘政治边界</td>
+        <td>从封闭 → 开放 + 地缘</td>
+      </tr>
+      <tr>
+        <td><strong>政策分析</strong></td>
+        <td>描述福利损失</td>
+        <td>一阶/二阶最优政策设计</td>
+        <td>从诊断 → 处方</td>
+      </tr>
+      <tr>
+        <td><strong>效率分析</strong></td>
+        <td>均衡特征描述</td>
+        <td>效率 vs. 均衡的严格比较</td>
+        <td>从实证 → 规范</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>3.2 方法论演进</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>方法论</th>
+        <th>代表文献</th>
+        <th>核心特征</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>纯理论建模</strong></td>
+        <td>Elliott et al. (2022)</td>
+        <td>博弈论 + 网络理论，推导均衡存在性、唯一性和比较静态</td>
+      </tr>
+      <tr>
+        <td><strong>一般均衡 + 校准</strong></td>
+        <td>Acemoglu & Tahbaz-Salehi (2024); Kopytov et al. (2024)</td>
+        <td>建立完整GE框架，使用美国数据校准关键参数</td>
+      </tr>
+      <tr>
+        <td><strong>结构估计</strong></td>
+        <td>Grossman, Helpman & Redding (2024)</td>
+        <td>用微观数据估计模型参数，反事实政策模拟</td>
+      </tr>
+      <tr>
+        <td><strong>准实验/自然实验</strong></td>
+        <td>Korovkin, Makarin & Miyauchi (2025)</td>
+        <td>利用地缘政治冲突作为外生冲击，企业间交易面板数据 + 事件研究法</td>
+      </tr>
+      <tr>
+        <td><strong>行政数据 + DID</strong></td>
+        <td>Alfaro-Ureña et al. (2022)</td>
+        <td>税务行政数据中的企业间交易，事件研究设计</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="highlight">
+    <strong>方法论文献链：</strong>
+    从纯理论博弈模型 → 校准GE模型 → 结构估计 → 准实验因果推断 → 结构模型+简化式结合（Korovkin et al. 2025 是方法论融合的典范：用简化式验证预测，用结构模型量化福利）。
+  </div>
+
+  <h3>3.3 核心理论洞见总结</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>&#9888;&#65039; 网络脆弱性定理</h4>
+      <p>中等生产率水平的均衡供应链网络内生地脆弱：小冲击→大波动。效率分配是连续的，但均衡分配可以非连续跳跃（Acemoglu & Tahbaz-Salehi 2024）。</p>
+    </div>
+    <div class="card">
+      <h4>&#128260; 稳定性-产出权衡</h4>
+      <p>企业为规避供应不确定性而转向稳定供应商，降低宏观波动但牺牲总产出。不确定性上升→网络重组→福利成本（Kopytov et al. 2024）。</p>
+    </div>
+    <div class="card">
+      <h4>&#127758; 重组缓冲效应</h4>
+      <p>企业内生地重组供应网络可部分缓解冲击的宏观经济代价。乌克兰冲突中，重组使产出损失从8.4%降至5.5%（Korovkin et al. 2025）。</p>
+    </div>
+    <div class="card">
+      <h4>&#127981; 多层韧性外部性</h4>
+      <p>韧性投资具有跨层网络外部性。最优补贴：上游企业应获得比下游更大的激励。一阶最优仅依赖本层参数，二阶最优依赖全网络参数（Grossman, Helpman & Sabal 2024）。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 四、期刊与作者分布 ====== -->
+<div class="section">
+  <h2><span class="icon">&#128202;</span> 四、发表统计与核心学者</h2>
+
+  <h3>4.1 期刊分布</h3>
+  <div class="bar-chart">
+    <div class="bar-row">
+      <div class="bar-label">REStud (3篇)</div>
+      <div class="bar-track"><div class="bar-fill" style="width:37.5%; background:linear-gradient(90deg,#b83280,#d53f8c);"><span>37.5%</span></div></div>
+      <div class="bar-pct">3篇</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">AER (2篇)</div>
+      <div class="bar-track"><div class="bar-fill" style="width:25%; background:linear-gradient(90deg,#2b6cb0,#3182ce);"><span>25.0%</span></div></div>
+      <div class="bar-pct">2篇</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">QJE (2篇)</div>
+      <div class="bar-track"><div class="bar-fill" style="width:25%; background:linear-gradient(90deg,#6b46c1,#805ad5);"><span>25.0%</span></div></div>
+      <div class="bar-pct">2篇</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">JPE (1篇)</div>
+      <div class="bar-track"><div class="bar-fill" style="width:12.5%; background:linear-gradient(90deg,#c05621,#dd6b20);"><span>12.5%</span></div></div>
+      <div class="bar-pct">1篇</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Econometrica (1篇)</div>
+      <div class="bar-track"><div class="bar-fill" style="width:12.5%; background:linear-gradient(90deg,#276749,#38a169);"><span>12.5%</span></div></div>
+      <div class="bar-pct">1篇</div>
+    </div>
+  </div>
+
+  <h3>4.2 明星学者分析</h3>
+  <p style="margin-bottom:12px;">该领域的核心学者集团呈现出<strong>高度集中</strong>的特征：</p>
+
+  <table>
+    <thead>
+      <tr><th>排名</th><th>学者</th><th>机构</th><th>发表数</th><th>合作网络</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>&#129351;</strong></td>
+        <td><strong>Gene M. Grossman</strong></td>
+        <td>Princeton</td>
+        <td>3篇</td>
+        <td>与Helpman长期合作（JPE 2023, AER 2024, QJE 2024）</td>
+      </tr>
+      <tr>
+        <td><strong>&#129352;</strong></td>
+        <td><strong>Elhanan Helpman</strong></td>
+        <td>Harvard</td>
+        <td>3篇</td>
+        <td>与Grossman共同发表全部供应链论文</td>
+      </tr>
+      <tr>
+        <td><strong>&#129353;</strong></td>
+        <td><strong>Daron Acemoglu</strong></td>
+        <td>MIT</td>
+        <td>1篇</td>
+        <td>与Tahbaz-Salehi合作，将网络经济学扩展到供应链</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="highlight">
+    <strong>Grossman-Helpman 双人组</strong> 是该领域最活跃的研究力量，贡献了8篇论文中的3篇（37.5%）。他们的研究范围覆盖了供应链韧性的核心议题：<em>回流vs.多元化（JPE 2023）→ 关税与全球供应链（AER 2024）→ 多层最优韧性投资（QJE 2024）</em>——形成了从政策问题到最优设计的完整研究闭环。
+  </div>
+
+  <h3>4.3 主题演化</h3>
+  <table>
+    <thead>
+      <tr><th>学者</th><th>2022–2023 主题</th><th>2024–2025 主题</th><th>演化方向</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Grossman &amp; Helpman</td>
+        <td>回流与多元化政策（JPE 2023）</td>
+        <td>关税冲击量化（AER 2024） → 多层最优韧性（QJE 2024）</td>
+        <td>从政策问题 → 量化分析 → 最优设计</td>
+      </tr>
+      <tr>
+        <td>Acemoglu</td>
+        <td>网络与宏观波动（前期研究）</td>
+        <td>供应链中断的宏观经济学（REStud 2024）</td>
+        <td>从一般网络 → 供应链专门化</td>
+      </tr>
+      <tr>
+        <td>新兴学者群体</td>
+        <td>—</td>
+        <td>Kopytov et al. (ECTA 2024); Korovkin et al. (REStud 2025)</td>
+        <td>新学者进入，带来方法论创新与实证数据</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ====== 五、研究空白 ====== -->
+<div class="section">
+  <h2><span class="icon">&#128269;</span> 五、研究空白与未来方向</h2>
+
+  <h3>5.1 话题空白：哪些话题有待深入？</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>&#127760; 服务供应链 vs. 制造业供应链</h4>
+      <p>现有研究几乎全部聚焦于制造业（实物产品）供应链。服务贸易、数字服务供应链的重构规律、风险和韧性机制尚未被系统研究。随着服务贸易占比超过50%，这一空白愈发显著。</p>
+      <span class="gap-tag gap-empirical">实证空白</span>
+    </div>
+    <div class="card">
+      <h4>&#128179; 金融渠道与实体供应链的互动</h4>
+      <p>现有文献将贸易信贷作为机制提及（如Li 2025 in CER），但在Top5的供应链重构文献中，银行信贷、金融摩擦与供应链韧性的<em>微观互动机制</em>尚未被严格建模和估计。</p>
+      <span class="gap-tag gap-theory">理论空白</span>
+      <span class="gap-tag gap-empirical">实证空白</span>
+    </div>
+    <div class="card">
+      <h4>&#128188; 劳动力市场与供应链的联动</h4>
+      <p>供应链重构如何影响劳动力市场（就业结构、技能需求、工资分配）？目前文献聚焦于企业产出和福利，但劳动力市场的调整动态是重要的政策关切，却几乎未被纳入分析框架。</p>
+      <span class="gap-tag gap-theory">理论空白</span>
+    </div>
+    <div class="card">
+      <h4>&#127795; 环境与气候维度的供应链重构</h4>
+      <p>碳关税（CBAM）、气候风险（极端天气、海平面上升）如何驱动供应链重构？"绿色供应链"的韧性是否不同于传统供应链？这些交叉议题目前完全缺失于Top5文献。</p>
+      <span class="gap-tag gap-theory">理论空白</span>
+      <span class="gap-tag gap-empirical">实证空白</span>
+    </div>
+  </div>
+
+  <h3>5.2 理论空白：哪些机制未被充分检验？</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>&#128274; 不完全契约与纵向一体化</h4>
+      <p>现有网络形成模型主要基于完全契约假设（或纳什议价）。但现实中，供应链关系大量涉及不完全契约、关系专用性投资和"敲竹杠"问题。将不完全契约理论（Grossman-Hart-Moore）与内生网络形成结合，是重要的理论空白。</p>
+      <span class="gap-tag gap-theory">理论空白</span>
+    </div>
+    <div class="card">
+      <h4>&#9200; 动态调整路径</h4>
+      <p>几乎所有模型比较的是冲击前后的均衡状态，但对<em>过渡动态</em>——企业如何一步步调整供应网络、调整速度的决定因素、调整过程中的福利变化——几乎一无所知。</p>
+      <span class="gap-tag gap-theory">理论空白</span>
+      <span class="gap-tag gap-method">方法空白</span>
+    </div>
+    <div class="card">
+      <h4>&#129309; 多重网络协同</h4>
+      <p>企业同时嵌入供应网络、创新网络、融资网络、所有权网络。这些网络的协同演化与交叉传播效应（如供应冲击如何通过所有权网络传导）尚未被系统建模。</p>
+      <span class="gap-tag gap-theory">理论空白</span>
+    </div>
+  </div>
+
+  <h3>5.3 方法空白：哪些方法未被应用？</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>&#129504; 机器学习与高维网络</h4>
+      <p>当前论文处理的网络规模相对有限（单一国家或行业）。随着全量企业间交易数据可得性提高（如增值税发票数据），需要机器学习方法处理高维网络结构和异质性。</p>
+      <span class="gap-tag gap-method">方法空白</span>
+    </div>
+    <div class="card">
+      <h4>&#128202; 随机对照实验（RCT）</h4>
+      <p>供应链重构研究目前完全依赖观测数据。与企业合作开展RCT（如随机化供应源多样化激励、随机信息干预）可以建立更干净的因果识别，但目前尚属空白。</p>
+      <span class="gap-tag gap-method">方法空白</span>
+    </div>
+    <div class="card">
+      <h4>&#128290; 文本分析与NLP</h4>
+      <p>企业年报、管理层讨论、新闻文本中包含丰富的供应链重构信息（关系建立/中断、风险感知、策略调整）。尚未有Top5论文系统地将NLP方法应用于供应链重构。</p>
+      <span class="gap-tag gap-method">方法空白</span>
+    </div>
+  </div>
+
+  <h3>5.4 情境空白：哪些国家/地区缺乏实证研究？</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>&#127464;&#127475; 中国视角</h4>
+      <p>作为全球供应链的核心节点，中国在供应链重构中的角色极为特殊。目前Top5文献中仅Grossman et al. (2024, AER)在关税分析中涉及中国作为<em>被征税对象</em>，缺少以中国企业或中国供应链为<em>分析主体</em>的研究。</p>
+      <span class="gap-tag gap-empirical">实证空白</span>
+    </div>
+    <div class="card">
+      <h4>&#127465;&#127466; &#127470;&#127481; 全球南方国家</h4>
+      <p>除Alfaro-Ureña et al. (2022, QJE)以哥斯达黎加和Korovkin et al. (2025, REStud)以乌克兰为背景外，绝大多数研究基于美国或一般理论。非洲、东南亚、拉美在供应链重构中的角色几乎完全未被Top5文献覆盖。</p>
+      <span class="gap-tag gap-empirical">实证空白</span>
+    </div>
+    <div class="card">
+      <h4>&#127462;&#127479; 发展中大国</h4>
+      <p>印度、巴西、印尼等发展中大国在"近岸友岸化"趋势中的战略位置、它们如何利用供应链重构实现产业升级，这些政策相关问题缺乏严谨的微观实证研究。</p>
+      <span class="gap-tag gap-empirical">实证空白</span>
+      <span class="gap-tag gap-policy">政策空白</span>
+    </div>
+  </div>
+
+  <!-- Summary of gaps -->
+  <div class="highlight" style="margin-top: 20px;">
+    <strong>&#128221; 空白维度总结：</strong>该领域仍处于理论驱动的快速成长期。当前最迫切的三个空白为：<br>
+    (1) <strong>宏观-微观桥梁缺失：</strong>理论模型丰富但微观实证验证严重不足（仅2篇有微观数据）；<br>
+    (2) <strong>地缘政治的外生变异利用不充分：</strong>中美贸易摩擦、俄乌冲突、COVID-19提供了大量自然实验，但仅Korovkin et al. (2025)做了系统利用；<br>
+    (3) <strong>政策评估严重滞后：</strong>各国已实施大量供应链韧性政策（补贴、税收优惠、回流激励），但严谨的政策效应评估几乎为零。
+  </div>
+</div>
+
+<!-- ====== 六、潜力话题 ====== -->
+<div class="section">
+  <h2><span class="icon">&#128640;</span> 六、潜力话题与交叉机会</h2>
+
+  <h3>6.1 高被引文献的共有主题</h3>
+  <p>分析8篇文献的引用网络和主题共性，以下三个方向在当前学术讨论中最受关注：</p>
+  <div class="card-grid">
+    <div class="card">
+      <h4>方向一：网络内生性</h4>
+      <p>从Elliott et al. (2022, 139引)到Acemoglu (2024, 41引)再到Korovkin et al. (2025)，"内生网络形成"是该领域最核心的共有主题。将微观企业网络选择与宏观结果连接的研究仍有巨大空间。</p>
+    </div>
+    <div class="card">
+      <h4>方向二：冲击放大机制</h4>
+      <p>Guerrieri et al. (2022, 372引)的"凯恩斯供给冲击"和Baqaee & Farhi (2022, 208引)的"分解供给需求冲击"被大量引用，表明<em>供应链冲击的放大与传导机制</em>是学界和政策界共同关心的问题。</p>
+    </div>
+    <div class="card">
+      <h4>方向三：贸易政策与供应链韧性</h4>
+      <p>Grossman, Helpman & Redding (2024, 108引)和Grossman, Helpman & Lhuillier (2023, 100引)的高引用量表明，<em>产业政策/贸易政策如何影响供应链重构</em>是一个高度政策相关且学术上富有成果的方向。</p>
+    </div>
+  </div>
+
+  <h3>6.2 交叉领域机会（领域 A + 话题 B + 方法 C）</h3>
+
+  <table>
+    <thead>
+      <tr><th>#</th><th>交叉组合</th><th>研究问题示例</th><th>可行性</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1</strong></td>
+        <td>
+          供应链网络<br>
+          + 金融摩擦<br>
+          + 银行-企业匹配数据
+        </td>
+        <td>银行信贷紧缩如何通过企业的供应链网络传导和放大？供应链韧性投资是否受融资约束限制？</td>
+        <td><span class="gap-tag gap-empirical" style="font-size:11px;">高</span></td>
+      </tr>
+      <tr>
+        <td><strong>2</strong></td>
+        <td>
+          供应链重构<br>
+          + 产业政策<br>
+          + 双重差分/事件研究
+        </td>
+        <td>美国《芯片法案》或欧盟CBAM如何影响全球半导体/高碳行业的供应链网络拓扑结构？</td>
+        <td><span class="gap-tag gap-empirical" style="font-size:11px;">高</span></td>
+      </tr>
+      <tr>
+        <td><strong>3</strong></td>
+        <td>
+          供应链韧性<br>
+          + 劳动力市场<br>
+          + 匹配数据 + 结构模型
+        </td>
+        <td>供应链回流如何影响本地劳动力市场的就业结构、工资溢价和技能需求？是否存在"供应链-劳动力"双重外部性？</td>
+        <td><span class="gap-tag gap-theory" style="font-size:11px;">中</span></td>
+      </tr>
+      <tr>
+        <td><strong>4</strong></td>
+        <td>
+          全球供应链<br>
+          + 气候风险<br>
+          + 空间计量 + 网络分析
+        </td>
+        <td>极端气候事件如何通过全球供应链网络产生跨境经济影响？企业如何预测和适应气候驱动的供应链中断？</td>
+        <td><span class="gap-tag gap-method" style="font-size:11px;">中</span></td>
+      </tr>
+      <tr>
+        <td><strong>5</strong></td>
+        <td>
+          数字供应链<br>
+          + 平台经济<br>
+          + 自然实验
+        </td>
+        <td>数字平台（如阿里巴巴、Amazon）如何改变中小企业的供应链参与和韧性？平台中介是否降低了供应网络形成中的搜索摩擦？</td>
+        <td><span class="gap-tag gap-empirical" style="font-size:11px;">高</span></td>
+      </tr>
+      <tr>
+        <td><strong>6</strong></td>
+        <td>
+          供应链重构<br>
+          + 技术溢出<br>
+          + DID + 专利数据
+        </td>
+        <td>跨国公司供应链关系的中断是否阻碍了技术溢出和知识扩散？友岸化是否导致了"知识脱钩"？</td>
+        <td><span class="gap-tag gap-empirical" style="font-size:11px;">中</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>6.3 政策热点相关话题</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>&#127987;&#65039; 产业补贴竞赛</h4>
+      <p>美国IRA、欧盟绿色新政、中国产业政策——各国竞相补贴关键供应链环节。这些补贴如何重塑全球供应链网络？是否存在"逐底竞争"？</p>
+    </div>
+    <div class="card">
+      <h4>&#128225; 友岸化与近岸化</h4>
+      <p>"去风险化"政策如何改变全球供应链的地理分布？墨西哥、越南、印度是否真的从中受益？受益的机制和幅度如何量化？</p>
+    </div>
+    <div class="card">
+      <h4>&#127760; 关键矿产供应链安全</h4>
+      <p>稀土、锂、钴等关键矿产的供应链集中度与国家安全关切。供应链多元化政策的有效性评估、替代技术的供应链影响评估。</p>
+    </div>
+    <div class="card">
+      <h4>&#129302; AI与供应链自动化</h4>
+      <p>AI和自动化技术如何改变供应链的韧性和效率权衡？AI辅助的供应链优化是否降低了网络的脆弱性？还是会引入新的系统性风险？</p>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 七、矛盾观点 ====== -->
+<div class="section">
+  <h2><span class="icon">&#9878;&#65039;</span> 七、学术争论与矛盾观点</h2>
+
+  <h3>7.1 核心张力：韧性投资是"太多"还是"太少"？</h3>
+  <p>8篇论文围绕供应链韧性的效率问题形成了鲜明的理论分歧：</p>
+
+  <table>
+    <thead>
+      <tr><th>立场</th><th>代表文献</th><th>核心论点</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>"韧性不足"派</strong></td>
+        <td>Elliott et al. (2022, AER)<br>Acemoglu & Tahbaz-Salehi (2024, REStud)</td>
+        <td>均衡中企业的韧性投资和关系多元化<em>低于社会最优水平</em>。原因是网络外部性：单个企业不内部化其投资对其他企业的正外部性。均衡网络过度脆弱。</td>
+      </tr>
+      <tr>
+        <td><strong>"韧性过度"派</strong></td>
+        <td>Kopytov et al. (2024, Econometrica)</td>
+        <td>企业出于自身风险规避可能<em>过度依赖稳定供应商</em>，牺牲了与高生产率但较高波动性供应商的合作机会。这导致总产出低于社会最优——韧性以效率为代价。</td>
+      </tr>
+      <tr>
+        <td><strong>"情境依赖"派</strong></td>
+        <td>Grossman, Helpman & Sabal (2024, QJE)<br>Grossman, Helpman & Lhuillier (2023, JPE)</td>
+        <td>韧性投资的最优水平取决于<em>网络层级位置</em>和<em>市场结构</em>。上游和下游的最优韧性投资不同，多元化与回流的最优选择取决于冲击类型（系统性 vs. 特殊）。不存在单一的"太多"或"太少"。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="highlight">
+    <strong>&#128161; 矛盾的本质：</strong>这一分歧的根源在于<strong>外部性的方向取决于模型设定</strong>。当模型强调"关系投资→降低断裂概率→网络更稳定"的正外部性时，均衡投资不足（Elliott, Acemoglu）。当模型强调"过度保守→放弃高生产率匹配→总产出下降"的负外部性时，均衡投资过度（Kopytov）。Grossman-Helpman系列试图调和两者的框架是正确的方向——但实证上<strong>哪种外部性在现实中占主导地位仍然未知</strong>。
+  </div>
+
+  <h3>7.2 另一矛盾：供应链整合的"光明面" vs. "脆弱面"</h3>
+  <p>
+    <strong>Alfaro-Ureña et al. (2022, QJE)</strong> 展示了加入跨国公司供应链带来的显著正面效应（生产力提升、就业增长、更好的管理实践）——这是供应链整合的<strong>光明面</strong>。
+    与此同时，<strong>Elliott et al. (2022, AER)</strong> 和 <strong>Acemoglu & Tahbaz-Salehi (2024)</strong> 揭示了深度整合的网络在面临冲击时的<strong>内在脆弱性</strong>。
+    这两种观点并非逻辑矛盾，而是同一枚硬币的两面：供应链整合在正常时期提高效率，在冲击时期放大风险。但目前文献<strong>尚未在一个统一框架中同时捕捉这两种效应</strong>，也未能量化它们的净福利影响。
+  </p>
+</div>
+
+<!-- ====== 八、结论与展望 ====== -->
+<div class="section">
+  <h2><span class="icon">&#127919;</span> 八、结论与展望</h2>
+
+  <p>基于2022–2025年经济学Top5期刊中8篇供应链重构核心文献的系统分析，我们得出以下关键结论：</p>
+
+  <div class="card-grid">
+    <div class="card" style="border-left: 4px solid var(--accent);">
+      <h4>&#9312; 领域处于快速成长期</h4>
+      <p>2024年集中发表4篇Top5论文，标志着该领域从"小众兴趣"进入"主流议程"。理论框架已相当成熟（内生网络形成+一般均衡），但<strong>实证验证严重滞后</strong>（仅2篇基于微观数据）。</p>
+    </div>
+    <div class="card" style="border-left: 4px solid var(--success);">
+      <h4>&#9313; 中国视角近乎空白</h4>
+      <p>中国作为全球供应链核心节点，在以Top5期刊为代表的国际前沿文献中仅作为"被征税对象"出现。利用中国企业间交易数据（如增值税发票数据）开展的研究具有<strong>巨大的发表潜力</strong>。</p>
+    </div>
+    <div class="card" style="border-left: 4px solid var(--warning);">
+      <h4>&#9314; 方法论机会窗口</h4>
+      <p>纯理论→校准→结构估计→准实验的演进链条中，<strong>准实验+结构模型的融合方法</strong>（如Korovkin et al. 2025）代表了方法论前沿。利用自然实验（贸易摩擦、地缘冲突、疫情）开展的研究更容易获得审稿人青睐。</p>
+    </div>
+    <div class="card" style="border-left: 4px solid var(--danger);">
+      <h4>&#9315; 跨学科交叉是新增长点</h4>
+      <p>供应链+金融、供应链+劳动力、供应链+气候、供应链+AI——这些交叉领域目前几乎无人涉足。率先进入这些交叉地带的学者将拥有<strong>先发优势</strong>。</p>
+    </div>
+  </div>
+
+  <div class="highlight" style="margin-top:20px; background: linear-gradient(135deg, #fff5f5 0%, #fffbeb 100%); border-left-color: #e53e3e;">
+    <strong>&#128679; 对研究者的建议：</strong>
+    (1) 如果拥有<strong>企业间交易微观数据</strong>，尽快利用地缘政治或政策冲击做准实验设计——这是当前最稀缺和最受认可的实证策略；<br>
+    (2) 如果擅长<strong>理论建模</strong>，向"不完全契约+内生网络""动态过渡路径""多重网络协同"方向突破；<br>
+    (3) 如果关注<strong>政策</strong>，产业补贴/关税/回流政策的效果评估是迫切的政策需求，但严谨的学术证据几乎空白；<br>
+    (4) <strong>中国数据</strong>（增值税发票、海关+企业匹配、上市公司供应链披露）在当前国际学术界具有稀缺性和独特价值。
+  </div>
+</div>
+
+<!-- ====== FOOTER ====== -->
+<div class="footer">
+  <p><strong>分析报告</strong> | 供应链重构领域 | 数据来源：经济学 Top5 期刊 2022–2025</p>
+  <p>生成日期：2026年6月10日 | 分析工具：AI Agent 驱动的实证经济学文献管理系统</p>
+  <p>数据文件：文献库/0_搜索结果/SupplyChainRestructuring-Top5-20260610.csv</p>
+</div>
+
+</div><!-- /container -->
+</body>
+</html>
